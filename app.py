@@ -8,6 +8,7 @@ from utils import (
     convert_from_image_to_cv2,
 )
 from detect import model
+import time
 
 app = Flask(__name__)
 
@@ -29,10 +30,16 @@ def index():
             pass
 
         if img_file and check_file(img_file.filename):
+
             img = Image.open(img_file.stream)
 
             img = convert_from_image_to_cv2(img)
+
+            time_inf_start = time.time()
             preds = model(img)
+            time_inf_end = time.time()
+
+            duration_inf_ms = round((time_inf_start - time_inf_end) * 1000)
 
             # часть ниже должна запускаться, если в preds больше одного элемента
             # нужна обработка ошибки, что у нас ничего не нашлось.....такое вообще может быть?
@@ -56,9 +63,16 @@ def index():
                 image_bytes = buf.getvalue()
             encoded_string = base64.b64encode(image_bytes).decode()
 
-        return render_template('index.html', img_data=encoded_string), 200
+        return render_template(
+            'index.html',
+            img_data=encoded_string,
+            time_model_inference=duration_inf_ms,
+            ), 200
     else:
-        return render_template('index.html', img_data=None), 200
+        return render_template(
+            'index.html',
+            img_data=None
+            ), 200
 
 
 if __name__ == "__main__":
