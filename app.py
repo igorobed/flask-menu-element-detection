@@ -40,7 +40,7 @@ def index():
             preds = model(img)
             time_inf_end = time.time()
 
-            duration_inf_ms = round((time_inf_start - time_inf_end) * 1000)
+            duration_inf_ms = round((time_inf_end - time_inf_start) * 1000)
 
             # часть ниже должна запускаться, если в preds больше одного элемента
             # нужна обработка ошибки, что у нас ничего не нашлось.....такое вообще может быть?
