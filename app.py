@@ -9,6 +9,7 @@ from utils import (
 )
 from detect import model
 import time
+from cvu.utils.draw import draw_bbox
 
 app = Flask(__name__)
 
@@ -54,7 +55,8 @@ def index():
                 for item_remove in preds_for_remove:
                     preds.remove(item_remove)
 
-                preds.draw(img)
+                # preds.draw(img)
+                draw_bbox(img, preds[0].bbox, color=(0, 0, 255))
 
             img = convert_from_cv2_to_image(img)
 
