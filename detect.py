@@ -5,5 +5,5 @@ model = Yolov5(
     backend="onnx",
     weight="detect_models/best.onnx",
     device="cpu",
-    input_shape=640
+    input_shape=640,
 )
