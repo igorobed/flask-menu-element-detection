@@ -3,14 +3,12 @@ from PIL import Image
 from io import BytesIO
 import base64
 from utils import (
-    check_file,
     convert_from_cv2_to_image,
     convert_from_image_to_cv2,
 )
 from detect import model
 import time
 from cvu.utils.draw import draw_bbox
-import logging
 
 app = Flask(__name__)
 
@@ -36,8 +34,8 @@ def index():
         img = Image.open(img_file.stream)
     except IOError: 
         return render_template(
-        'index.html',
-        not_img=True,
+            "index.html",
+            not_img=True,
         ), 415  # unsopported media type
     
     img = convert_from_image_to_cv2(img)
@@ -62,14 +60,14 @@ def index():
     img = convert_from_cv2_to_image(img)
 
     with BytesIO() as buf:
-        img.save(buf, 'jpeg')
+        img.save(buf, "jpeg")
         image_bytes = buf.getvalue()
     encoded_string = base64.b64encode(image_bytes).decode()
 
     duration_ms = round((time.time() - start_time) * 1000)
 
     return render_template(
-        'index.html',
+        "index.html",
         img_data=encoded_string,
         time_inference=duration_ms,
         not_img=False,
