@@ -18,6 +18,7 @@
         </p>
     </form>
 
+    
     {% if img_data %}
         <p align="center">
             <h2>Время обработки изображения сервером: {{ time_inference }} ms</h2>
@@ -26,6 +27,12 @@
             <img src="data:image/jpeg;base64,{{ img_data }}"/>
         </p>
     {% endif %}
+    {% if not_img %}
+    <p align="center">
+        <h2>Переданы некорректные данные. Необходимо отправить изображение</h2>
+    </p>
+    {% endif %}
+
     </center>
 </div>
 {% endblock %}

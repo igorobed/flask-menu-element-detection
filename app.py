@@ -10,28 +10,36 @@ from utils import (
 from detect import model
 import time
 from cvu.utils.draw import draw_bbox
+import logging
 
 app = Flask(__name__)
 
 
 @app.route("/", methods=["get", "post"])
 def index():
+    
     if request.method == "GET":
         return render_template(
             'index.html',
-            img_data=None
+            img_data=None,
+            not_img=False,
             ), 200
     
     start_time = time.time()
 
     img_file = request.files["img_file"]
 
-    if not check_file(img_file.filename):
-        # надо вернуть информацию о некорректном формате данных и соответствующий код
-        pass
-
     # если мы попали сюда, значит предыдущие проверки прошли успешно и мы получили изображение
-    img = Image.open(img_file.stream)
+    # при начале оработки файла будем следить за тем,
+    # что мы получили изображение, а не что-то еще
+    try:
+        img = Image.open(img_file.stream)
+    except IOError: 
+        return render_template(
+        'index.html',
+        not_img=True,
+        ), 415  # unsopported media type
+    
     img = convert_from_image_to_cv2(img)
     preds = model(img)
 
@@ -64,6 +72,7 @@ def index():
         'index.html',
         img_data=encoded_string,
         time_inference=duration_ms,
+        not_img=False,
         ), 200
 
 
