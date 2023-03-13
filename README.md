@@ -4,6 +4,8 @@ Web-интерфейс: http://igorobed.pythonanywhere.com/
 
 Собранный датасет: https://drive.google.com/drive/folders/1VXX9DOlfOyB7F9xYFmsneDD6NkDogzaA?usp=sharing
 
+Датасет размечался с помощью CVAT(https://www.cvat.ai/)
+
 Модель: YOLOv5s
 
 Для обучения модели использовался следующий инструментарий: https://github.com/ultralytics/yolov5?ysclid=lf6pl35aub526802110
