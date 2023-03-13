@@ -1,4 +1,5 @@
 from cvu.detector.yolov5 import Yolov5
+from cvu.detector.prediction import Prediction
 
 model = Yolov5(
     classes="menu",
@@ -7,3 +8,4 @@ model = Yolov5(
     device="cpu",
     input_shape=640
 )
+
