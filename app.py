@@ -46,7 +46,10 @@ def index():
                 break
         
         # отобразим область с обнаруженным объектом
-        draw_bbox(img, best_pred.bbox, color=(0, 0, 255))
+        # но сначала проверим, что найденный элемент не распологается снизу
+        # иначе у нас произошло ложноположительное срабатывание
+        if best_pred.bbox[1] < 2 * (img.shape[0] / 3):
+            draw_bbox(img, best_pred.bbox, color=(0, 0, 255))
     
     img = convert_from_cv2_to_image(img)
 
