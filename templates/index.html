@@ -1,7 +1,14 @@
 {% extends 'base.html' %}
 
-{% block content %}
+{% block head %}
+<h1>
+    <center>Загрузите скриншот экрана смартфона</center>
+</h1>
+{% endblock %}
 
+{% block content %}
+<div>
+    <center>
     <form action="" method="post" enctype="multipart/form-data">
         <p>
             <input type="file" name="img_file" autocomplete="off" required>
@@ -12,12 +19,13 @@
     </form>
 
     {% if img_data %}
-        <p>
+        <p align="center">
             <h2>Время обработки изображения сервером: {{ time_inference }} ms</h2>
         </p>
         <p>
             <img src="data:image/jpeg;base64,{{ img_data }}"/>
         </p>
     {% endif %}
-
+    </center>
+</div>
 {% endblock %}
