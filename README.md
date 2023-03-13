@@ -14,3 +14,20 @@ Web-интерфейс: http://igorobed.pythonanywhere.com/
 
 # Пример работы:
 
+## Начало работы
+
+![photo_5222210977150387696_y](https://user-images.githubusercontent.com/43452966/224692379-f375e0af-898b-4b2a-9bb2-722efadda095.jpg)
+
+## Выбранный скриншот
+
+![photo_5222210977150387698_y](https://user-images.githubusercontent.com/43452966/224692673-2332b61e-ae5f-40db-a19d-3ac316947038.jpg)
+
+## Загрузка выбранного изображения
+
+![photo_5222210977150387699_y](https://user-images.githubusercontent.com/43452966/224692885-b18551b0-33a8-406a-ab5e-da19abc71cea.jpg)
+
+## После нажатия кнопки распознать
+
+![photo_5222210977150387697_y (1)](https://user-images.githubusercontent.com/43452966/224693040-8f052282-5fc4-46d0-9cbc-6564e3480eb0.jpg)
+
+
