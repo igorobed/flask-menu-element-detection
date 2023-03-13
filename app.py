@@ -10,71 +10,70 @@ from utils import (
 from detect import model
 import time
 from cvu.utils.draw import draw_bbox
+import logging
 
 app = Flask(__name__)
 
 
 @app.route("/", methods=["get", "post"])
 def index():
-
-    if request.method == "POST":
-        if "img_file" not in request.files:
-            pass
-
-        img_file = request.files["img_file"]
-        if img_file.filename == "":
-            pass
-
-        if not (img_file and check_file(img_file.filename)):
-            # тут надо вернуть инфу о некорректных данных от пользователя
-            # убрать следующий if
-            pass
-
-        if img_file and check_file(img_file.filename):
-
-            img = Image.open(img_file.stream)
-
-            img = convert_from_image_to_cv2(img)
-
-            time_inf_start = time.time()
-            preds = model(img)
-            time_inf_end = time.time()
-
-            duration_inf_ms = round((time_inf_end - time_inf_start) * 1000)
-
-            # часть ниже должна запускаться, если в preds больше одного элемента
-            # нужна обработка ошибки, что у нас ничего не нашлось.....такое вообще может быть?
-
-            if len(preds) > 0:
-                max_conf = max([item.confidence for item in preds])
-            
-                # может быть только один элемент меню
-                preds_for_remove = [item for item in preds if item.confidence != max_conf]
-
-                # удаляем предсказания, в которых мы менее уверены
-                for item_remove in preds_for_remove:
-                    preds.remove(item_remove)
-
-                # preds.draw(img)
-                draw_bbox(img, preds[0].bbox, color=(0, 0, 255))
-
-            img = convert_from_cv2_to_image(img)
-
-            with BytesIO() as buf:
-                img.save(buf, 'jpeg')
-                image_bytes = buf.getvalue()
-            encoded_string = base64.b64encode(image_bytes).decode()
-
+    
+    if request.method == "GET":
         return render_template(
             'index.html',
-            img_data=encoded_string,
-            time_model_inference=duration_inf_ms,
+            img_data=None,
+            not_img=False,
             ), 200
-    else:
+    
+    start_time = time.time()
+
+    img_file = request.files["img_file"]
+
+    # если мы попали сюда, значит предыдущие проверки прошли успешно и мы получили изображение
+    # при начале оработки файла будем следить за тем,
+    # что мы получили изображение, а не что-то еще
+    try:
+        img = Image.open(img_file.stream)
+    except IOError: 
         return render_template(
-            'index.html',
-            img_data=None
-            ), 200
+        'index.html',
+        not_img=True,
+        ), 415  # unsopported media type
+    
+    img = convert_from_image_to_cv2(img)
+    preds = model(img)
+
+    # если алгоритм не обнаружил меню на изображении, то просто возвращаем исходный объект
+    if len(preds) > 0:
+        # модель может найти несколько элементов похожих на меню
+        # необходимо выбрать наиболее вероятный
+        max_conf = max([item.confidence for item in preds])
+        for pred in preds:
+            if pred.confidence == max_conf:
+                best_pred = pred
+                break
+        
+        # отобразим область с обнаруженным объектом
+        # но сначала проверим, что найденный элемент не распологается снизу
+        # иначе у нас произошло ложноположительное срабатывание
+        if best_pred.bbox[1] < 2 * (img.shape[0] / 3):
+            draw_bbox(img, best_pred.bbox, color=(0, 0, 255))
+    
+    img = convert_from_cv2_to_image(img)
+
+    with BytesIO() as buf:
+        img.save(buf, 'jpeg')
+        image_bytes = buf.getvalue()
+    encoded_string = base64.b64encode(image_bytes).decode()
+
+    duration_ms = round((time.time() - start_time) * 1000)
+
+    return render_template(
+        'index.html',
+        img_data=encoded_string,
+        time_inference=duration_ms,
+        not_img=False,
+        ), 200
 
 
 if __name__ == "__main__":
