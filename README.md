@@ -6,6 +6,8 @@ Web-интерфейс: http://igorobed.pythonanywhere.com/
 
 Собранный датасет: https://drive.google.com/drive/folders/1VXX9DOlfOyB7F9xYFmsneDD6NkDogzaA?usp=sharing
 
+Обучающий набор данных состоит из 176 изображений, в валидационном и тестовом по 20 изображений
+
 Датасет размечался с помощью CVAT(https://www.cvat.ai/). Данные разбиты на train/val/test. При обучении модель валидировалась на данных из val
 
 Модель: YOLOv5s
@@ -22,6 +24,7 @@ Web-интерфейс: http://igorobed.pythonanywhere.com/
 
 Оценка работы модели на тестовом наборе данных:
 
+![image](https://user-images.githubusercontent.com/43452966/224969274-bf0aff64-3958-4913-8207-ebdce44c8fde.png)
 
 
 # Пример работы:
