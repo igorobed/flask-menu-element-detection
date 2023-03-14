@@ -1,6 +1,14 @@
 import numpy as np
 from PIL import Image
 import cv2
+import logging
+
+my_logger = logging.getLogger(__name__)
+my_logger.setLevel(logging.INFO)
+handler = logging.FileHandler("logs.log", mode="w")
+formatter = logging.Formatter("%(asctime)s %(levelname)s %(message)s")
+handler.setFormatter(formatter)
+my_logger.addHandler(handler)
 
 
 def convert_from_cv2_to_image(img: np.ndarray) -> Image:

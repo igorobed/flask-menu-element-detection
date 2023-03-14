@@ -1,0 +1,8 @@
+flask
+cvu-python
+onnx
+onnxruntime
+Pillow
+pytest
+black
+flake8

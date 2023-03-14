@@ -26,13 +26,13 @@
 
 ![image](https://user-images.githubusercontent.com/43452966/224969274-bf0aff64-3958-4913-8207-ebdce44c8fde.png)
 
-# Пример работы:
-
 ## Запуск
 
 docker build . -t flask_detect:latest
 
 docker run -p 5000:5000 flask_detect:latest
+
+# Пример работы:
 
 ## Начало работы
 
@@ -49,5 +49,3 @@ docker run -p 5000:5000 flask_detect:latest
 ## После нажатия кнопки распознать
 
 ![photo_5222210977150387697_y (1)](https://user-images.githubusercontent.com/43452966/224693040-8f052282-5fc4-46d0-9cbc-6564e3480eb0.jpg)
-
-
