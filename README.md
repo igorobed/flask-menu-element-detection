@@ -14,7 +14,7 @@ Web-интерфейс: http://igorobed.pythonanywhere.com/
 
 Также использовались такие инструменты, как ONNX, ONNXRuntime и библиотека CVU(https://github.com/BlueMirrors/cvu?ysclid=lf6pp2udxk110825426) для обработки инференса модели
 
-Предобученная модель yolov5s дообучалась на собранном мною наборе данных с размером батча - 16 и количеством эпох - 35. Результаты обучения и полученные метрики доступны по следующей ссылке - https://drive.google.com/drive/folders/1B9Ms2Y435UhyzkJyF323h1Jg9jbYMhg8?usp=sharing
+Предобученная модель yolov5s дообучалась на собранном мною наборе данных с размером батча - 16 и количеством эпох - 35. Результаты обучения(веса) и полученные метрики доступны по следующей ссылке - https://drive.google.com/drive/folders/1B9Ms2Y435UhyzkJyF323h1Jg9jbYMhg8?usp=sharing
 
 # Пример работы:
 
