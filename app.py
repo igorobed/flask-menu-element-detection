@@ -2,29 +2,14 @@ from flask import Flask, render_template, request
 from PIL import Image
 from io import BytesIO
 import base64
-from utils import (
-    convert_from_cv2_to_image,
-    convert_from_image_to_cv2,
-)
-from detect import model
 import time
-from cvu.utils.draw import draw_bbox
-import logging
+
+from utils import my_logger
+from detect import MyDetector
+
 
 app = Flask(__name__)
-# logging.basicConfig(
-#     level=logging.INFO,
-#     filename="logs.log",
-#     filemode="w",
-#     format="%(asctime)s %(levelname)s %(message)s",
-# )
-
-my_logger = logging.getLogger(__name__)
-my_logger.setLevel(logging.INFO)
-handler = logging.FileHandler("logs.log", mode="w")
-formatter = logging.Formatter("%(asctime)s %(levelname)s %(message)s")
-handler.setFormatter(formatter)
-my_logger.addHandler(handler)
+detector = MyDetector()
 
 
 @app.route("/", methods=["get", "post"])
@@ -65,30 +50,9 @@ def index():
     else:
         my_logger.info("Image uploaded successfully")
 
-    img = convert_from_image_to_cv2(img)
-    preds = model(img)
-    my_logger.info("The model has processed the incoming image")
-
-    # если алгоритм не обнаружил меню на изображении,
-    # то просто возвращаем исходный объект
-    if len(preds) > 0:
-        # модель может найти несколько элементов похожих на меню
-        # необходимо выбрать наиболее вероятный
-        max_conf = max([item.confidence for item in preds])
-        for pred in preds:
-            if pred.confidence == max_conf:
-                best_pred = pred
-                break
-
-        # отобразим область с обнаруженным объектом
-        # но сначала проверим, что найденный элемент не распологается снизу
-        # иначе у нас произошло ложноположительное срабатывание
-        if best_pred.bbox[1] < 2 * (img.shape[0] / 3):
-            draw_bbox(img, best_pred.bbox, color=(0, 0, 255))
-    else:
-        my_logger.info("The model did not find the desired object")
-
-    img = convert_from_cv2_to_image(img)
+    # детекция искомого объекта на изображении
+    # и отрисовка области с ним в случае успеха
+    img = detector(img)
 
     with BytesIO() as buf:
         img.save(buf, "jpeg")
