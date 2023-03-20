@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, jsonify, make_response
 from PIL import Image
 from io import BytesIO
 import base64
@@ -10,6 +10,28 @@ from detect import MyDetector
 
 app = Flask(__name__)
 detector = MyDetector()
+
+
+@app.route("/detection", methods=["post"])
+def get_detection():
+    img_file = request.files["img_file"]
+    try:
+        img = Image.open(img_file.stream)
+    except IOError:
+        my_logger.warning("The user tried to upload a non-image")
+        return (
+            jsonify(
+                {
+                    "error": "Unsopported media type",
+                }
+            ),
+            415,
+        )
+    else:
+        my_logger.info("Image uploaded successfully")
+
+    _, elements = detector(img, True)
+    return make_response(jsonify(elements), 200)
 
 
 @app.route("/", methods=["get", "post"])
@@ -39,6 +61,7 @@ def index():
     try:
         img = Image.open(img_file.stream)
     except IOError:
+        my_logger.warning("The user tried to upload a non-image")
         return (
             render_template(
                 "index.html",
@@ -46,7 +69,6 @@ def index():
             ),
             415,
         )  # unsopported media type
-        my_logger.warning("The user tried to upload a non-image")
     else:
         my_logger.info("Image uploaded successfully")
 
