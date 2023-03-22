@@ -15,7 +15,7 @@ img = cv2.imread(out_img_path)
 
 results = reader.readtext(img, detail=1, paragraph=False)
 
-for (bbox, text, prob) in results:
+for bbox, text, prob in results:
     (tl, tr, br, bl) = bbox
     tl = (int(tl[0]), int(tl[1]))
     tr = (int(tr[0]), int(tr[1]))
