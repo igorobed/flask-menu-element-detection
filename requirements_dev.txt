@@ -7,3 +7,5 @@ pytest
 black
 flake8
 scikit-image
+easyocr
+opencv-python==4.5.4.60
