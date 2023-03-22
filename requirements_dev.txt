@@ -6,3 +6,4 @@ Pillow
 pytest
 black
 flake8
+scikit-image
