@@ -5,11 +5,12 @@ import base64
 import time
 
 from utils import my_logger
-from detect import MyDetector
+from detect import MyDetector, MyDetectorUI
 
 
 app = Flask(__name__)
 detector = MyDetector()
+detector_ui = MyDetectorUI()
 
 
 @app.route("/detection", methods=["post"])
@@ -32,6 +33,28 @@ def get_detection():
 
     _, elements = detector(img, True)
     return make_response(jsonify(elements), 200)
+
+
+@app.route("/detection_menu", methods=["post"])
+def get_detection_menu():
+    img_before = request.files["img_before"]  # до нажатия бургер-меню
+    img_after = request.files["img_after"]  # после нажатия бургер-меню
+
+    try:
+        img_b = Image.open(img_before.stream)
+        img_a = Image.open(img_after.stream)
+    except IOError:
+        my_logger.warning("The user tried to upload a non-image")
+        return (
+            jsonify(
+                {
+                    "error": "Unsopported media type",
+                }
+            ),
+            415,
+        )
+    else:
+        my_logger.info("Image uploaded successfully")
 
 
 @app.route("/", methods=["get", "post"])

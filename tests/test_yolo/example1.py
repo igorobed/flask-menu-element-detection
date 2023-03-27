@@ -111,8 +111,8 @@ def get_menu_box(img_in: np.ndarray, img_out: np.ndarray):
 
 
 
-inp_img_path = "tests\\test_imgs\\img_12_in.jpg"
-out_img_path = "tests\\test_imgs\\img_12_out.jpg"
+inp_img_path = "tests\\test_imgs\\img_6_in.jpg"
+out_img_path = "tests\\test_imgs\\img_6_out.jpg"
 
 img_in = cv2.imread(inp_img_path)
 img_out = cv2.imread(out_img_path)

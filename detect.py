@@ -9,6 +9,31 @@ from utils import (
 )
 
 
+CLASSES_UI = [
+    'BackgroundImage',
+    'Bottom_Navigation',
+    'Card',
+    'CheckBox',
+    'Checkbox',
+    'CheckedTextView',
+    'Drawer',
+    'EditText',
+    'Icon',
+    'Image',
+    'Map',
+    'Modal',
+    'Multi_Tab',
+    'PageIndicator',
+    'Remember',
+    'Spinner',
+    'Switch',
+    'Text',
+    'TextButton',
+    'Toolbar',
+    'UpperTaskBar',
+]
+
+
 class MyDetector:
     def __init__(self) -> None:
         self.model = Yolov5(
@@ -56,3 +81,14 @@ class MyDetector:
             return img
         else:
             return img, found_elements
+        
+
+class MyDetectorUI:
+    def __init__(self) -> None:
+        self.model = Yolov5(
+            classes=CLASSES_UI,
+            backend="torch",
+            weight="detect_models/best25.torchscript",
+            device="cpu",
+            input_shape=640,
+            )
