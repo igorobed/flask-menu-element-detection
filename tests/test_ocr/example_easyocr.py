@@ -13,7 +13,7 @@ reader = easyocr.Reader(["ru", "en"])
 
 img = cv2.imread(out_img_path)
 
-results = reader.readtext(img, detail=1, paragraph=False)
+results = reader.readtext(img, detail=1, paragraph=False, decoder="beamsearch")
 
 for bbox, text, prob in results:
     (tl, tr, br, bl) = bbox

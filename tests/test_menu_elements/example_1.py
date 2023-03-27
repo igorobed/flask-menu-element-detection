@@ -130,8 +130,8 @@ def get_menu_box(img_in: np.ndarray, img_out: np.ndarray):
 
 
 # получаем два изображения
-inp_img_path = "tests\\test_imgs\\img_5_in.jpg"
-out_img_path = "tests\\test_imgs\\img_5_out.jpg"
+inp_img_path = "tests\\test_imgs\\img_9_in.jpg"
+out_img_path = "tests\\test_imgs\\img_9_out.jpg"
 
 img_in = cv2.imread(inp_img_path)
 img_out = cv2.imread(out_img_path)
@@ -200,6 +200,8 @@ for key, items in res.items():
 
     top_left_x_y, back_right_x_y = tl, br
 
+    max_x = back_right_x_y[0]
+
     for box in items[1:]:
         (tl, tr, br, bl) = box
         tl = (int(tl[0]), int(tl[1]))
@@ -211,14 +213,29 @@ for key, items in res.items():
         if br[1] > back_right_x_y[1]:
             back_right_x_y = br
 
+        if back_right_x_y[0] > max_x:
+            max_x = back_right_x_y[0]
+
+    back_right_x_y = (max_x, back_right_x_y[1])
     union_rectangles.append([top_left_x_y, back_right_x_y])
 
 # отрисовываем найденные области
+# for item in union_rectangles:
+#     cv2.rectangle(menu_box_img, item[0], item[1], (0, 0, 255), 2)
+
+# найдем область с наибольшей площадью
+max_square = 0
+max_rectangles = None
 for item in union_rectangles:
-    cv2.rectangle(menu_box_img, item[0], item[1], (0, 0, 255), 2)
+    curr_square = (item[1][0] - item[0][0]) * (item[1][1] - item[0][1])
+    if curr_square > max_square:
+        max_rectangles = item
+        max_square = curr_square
+
+cv2.rectangle(menu_box_img, max_rectangles[0], max_rectangles[1], (0, 0, 255), 2)
 
 show_img(menu_box_img)
 
-cv2.imwrite("tests\\test_menu_elements\\img_5_menu.jpg", menu_box_img)
+# cv2.imwrite("tests\\test_menu_elements\\img_5_menu.jpg", menu_box_img)
 
 print(f"{int((end - start) * 1000)} ms")
