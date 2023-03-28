@@ -12,6 +12,7 @@ from utils import (
     get_changed_region,
 )
 from detect import MyDetector, MyDetectorUI
+from sklearn.cluster import AgglomerativeClustering
 
 
 app = Flask(__name__)
@@ -52,6 +53,7 @@ def get_detection():
     img_b = convert_from_image_to_cv2(img_b)
     img_a = convert_from_image_to_cv2(img_a)
 
+    # чтобы вернуться к оригинальным координатам
     cropped_x_y_in = {
         "x": 0,
         "y": 0
@@ -90,8 +92,89 @@ def get_detection():
         )
     
     # вырезаем область, притерпевшую изменения
-    menu_box_img = custom_crop(img_a, **menu_box, cropped_x_y_out)
+    cropped_x_y_out["x"] += menu_box["x"]
+    cropped_x_y_out["y"] += menu_box["y"]
+    menu_box_img = custom_crop(img_a, **menu_box)
+    
+    predictions_crop = detector_ui.model(menu_box_img)
+
+    # искать кластеры текстов мне в любом случае надо в обрезанном menu_box_img
+    clustering = AgglomerativeClustering(
+	n_clusters=2,
+	affinity="manhattan",
+	linkage="complete",
+    )
+
+    list_bboxes = []
+    list_bboxes_tl = []
+
+    for item in predictions_crop:
+        if item.class_name == "Text":
+            list_bboxes.append(list(map(int, item.bbox)))
+            list_bboxes_tl.append(list(map(int, item.bbox[:2])))
+
+    for item in list_bboxes_tl:
+        item[1] = 0
+
+    clustering.fit(list_bboxes_tl)
+
+     # теперь мне надо найти области и их площади, чтобы выбрать максимальную
+    unions = {}
+    for idx, label in enumerate(clustering.labels_):
+        if label in unions:
+            unions[label].append(list_bboxes[idx])
+        else:
+            unions[label] = [list_bboxes[idx]]
+
+    union_rectangles = []
+    for key, items in unions.items():
+        tl, br = items[0][:2], items[0][2:]
+    
+        if len(items) == 1:
+            union_rectangles.append([tl, br])
+            continue
+
+        top_left_x_y, back_right_x_y = tl, br
+
+        min_x = top_left_x_y[0]
+        max_x = back_right_x_y[0]
+
+        for box in items[1:]:
+            tl, br = box[:2], box[2:]
+
+            if tl[1] < top_left_x_y[1]:
+                top_left_x_y = tl
+
+            if br[1] > back_right_x_y[1]:
+                back_right_x_y = br
+
+            if back_right_x_y[0] > max_x:
+                max_x = back_right_x_y[0]
         
+            if top_left_x_y[0] < min_x:
+                min_x = top_left_x_y[0]
+
+        top_left_x_y = [min_x, top_left_x_y[1]]
+        back_right_x_y = [max_x, back_right_x_y[1]]
+        union_rectangles.append([top_left_x_y, back_right_x_y])
+
+    max_square = 0
+    max_rectangles = None
+    for item in union_rectangles:
+        curr_square = (item[1][0] - item[0][0]) * (item[1][1] - item[0][1]) 
+        if curr_square > max_square:
+            max_rectangles = item
+            max_square = curr_square
+
+    # после того, как обнаружили необходимую область,
+    # получим список элементов, принадлежащих ей
+    result_text_regions = []
+    for item in predictions_crop:
+        if item.class_name == "Text":
+            x, y = int(item.bbox[0]), int(item.bbox[1])
+            
+
+
 
 @app.route("/", methods=["get", "post"])
 def index():
