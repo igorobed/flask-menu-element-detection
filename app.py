@@ -3,7 +3,7 @@ from PIL import Image
 from io import BytesIO
 import base64
 import time
-
+import cv2
 from utils import (
     my_logger,
     convert_from_image_to_cv2,
@@ -11,6 +11,9 @@ from utils import (
     custom_crop,
     get_changed_region,
 )
+
+from utils import show_img
+
 from detect import MyDetector, MyDetectorUI
 from sklearn.cluster import AgglomerativeClustering
 
@@ -43,7 +46,7 @@ def get_detection():
 
 
 @app.route("/detection_menu", methods=["post"])
-def get_detection():
+def get_detection_menu():
     img_before = request.files["img_before"]  # до нажатия бургер-меню
     img_after = request.files["img_after"]  # после нажатия бургер-меню
 
@@ -64,10 +67,10 @@ def get_detection():
         "y": 0
     }
 
-    img_b = crop_head(img_b, cropped_x_y=cropped_x_y_in)
-    img_a = crop_head(img_a, cropped_x_y=cropped_x_y_out)
+    img_b_crop = crop_head(img_b, cropped_x_y=cropped_x_y_in)
+    img_a_crop = crop_head(img_a, cropped_x_y=cropped_x_y_out)
 
-    menu_box, score = get_changed_region(img_b, img_a)
+    menu_box, score = get_changed_region(img_b_crop, img_a_crop)
 
     # score выдает процент схожести двух изображений
     if menu_box is None:
@@ -94,7 +97,7 @@ def get_detection():
     # вырезаем область, притерпевшую изменения
     cropped_x_y_out["x"] += menu_box["x"]
     cropped_x_y_out["y"] += menu_box["y"]
-    menu_box_img = custom_crop(img_a, **menu_box)
+    menu_box_img = custom_crop(img_a_crop, **menu_box)
     
     predictions_crop = detector_ui.model(menu_box_img)
 
@@ -118,7 +121,7 @@ def get_detection():
 
     clustering.fit(list_bboxes_tl)
 
-     # теперь мне надо найти области и их площади, чтобы выбрать максимальную
+    # теперь мне надо найти области и их площади, чтобы выбрать максимальную
     unions = {}
     for idx, label in enumerate(clustering.labels_):
         if label in unions:
@@ -159,11 +162,11 @@ def get_detection():
         union_rectangles.append([top_left_x_y, back_right_x_y])
 
     max_square = 0
-    max_rectangles = None
+    max_rectangle = None
     for item in union_rectangles:
         curr_square = (item[1][0] - item[0][0]) * (item[1][1] - item[0][1]) 
         if curr_square > max_square:
-            max_rectangles = item
+            max_rectangle = item
             max_square = curr_square
 
     # после того, как обнаружили необходимую область,
@@ -172,7 +175,22 @@ def get_detection():
     for item in predictions_crop:
         if item.class_name == "Text":
             x, y = int(item.bbox[0]), int(item.bbox[1])
-            
+            if x >= (max_rectangle[0][0] - 10) and y >= (max_rectangle[0][1] - 10):
+                temp = item.bbox
+                temp[0] += cropped_x_y_out["x"]
+                temp[2] += cropped_x_y_out["x"]
+                temp[1] += cropped_x_y_out["y"]
+                temp[3] += cropped_x_y_out["y"]
+
+                cv2.rectangle(img_a, list(map(int, temp[:2])), list(map(int, temp[2:])), (0, 0, 255), 2)
+
+                result_text_regions.append(temp)
+
+    show_img(img_a)
+
+    # результаты нужно сортировать по оси y
+    
+    return make_response(jsonify(result_text_regions), 200)
 
 
 
