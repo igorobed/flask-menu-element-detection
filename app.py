@@ -4,12 +4,19 @@ from io import BytesIO
 import base64
 import time
 
-from utils import my_logger
-from detect import MyDetector
+from utils import (
+    my_logger,
+    convert_from_image_to_cv2,
+    crop_head,
+    custom_crop,
+    get_changed_region,
+)
+from detect import MyDetector, MyDetectorUI
 
 
 app = Flask(__name__)
 detector = MyDetector()
+detector_ui = MyDetectorUI()
 
 
 @app.route("/detection", methods=["post"])
@@ -33,6 +40,58 @@ def get_detection():
     _, elements = detector(img, True)
     return make_response(jsonify(elements), 200)
 
+
+@app.route("/detection_menu", methods=["post"])
+def get_detection():
+    img_before = request.files["img_before"]  # до нажатия бургер-меню
+    img_after = request.files["img_after"]  # после нажатия бургер-меню
+
+    img_b = Image.open(img_before.stream)
+    img_a = Image.open(img_after.stream)
+
+    img_b = convert_from_image_to_cv2(img_b)
+    img_a = convert_from_image_to_cv2(img_a)
+
+    cropped_x_y_in = {
+        "x": 0,
+        "y": 0
+    }
+
+    cropped_x_y_out = {
+        "x": 0,
+        "y": 0
+    }
+
+    img_b = crop_head(img_b, cropped_x_y=cropped_x_y_in)
+    img_a = crop_head(img_a, cropped_x_y=cropped_x_y_out)
+
+    menu_box, score = get_changed_region(img_b, img_a)
+
+    # score выдает процент схожести двух изображений
+    if menu_box is None:
+        # print(f"Same image: {score}")
+        return (
+            jsonify(
+                {
+                    "msg": "Same image"
+                }
+            ),
+            200,
+        )
+    elif menu_box == {}:
+        # print("Menu field not detected")
+        return (
+            jsonify(
+                {
+                    "msg": "Same image"
+                }
+            ),
+            200,
+        )
+    
+    # вырезаем область, притерпевшую изменения
+    menu_box_img = custom_crop(img_a, **menu_box, cropped_x_y_out)
+        
 
 @app.route("/", methods=["get", "post"])
 def index():
