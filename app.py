@@ -16,6 +16,7 @@ from utils import show_img
 
 from detect import MyDetector, MyDetectorUI
 from sklearn.cluster import AgglomerativeClustering
+import io
 
 
 app = Flask(__name__)
@@ -47,11 +48,22 @@ def get_detection():
 
 @app.route("/detection_menu", methods=["post"])
 def get_detection_menu():
-    img_before = request.files["img_before"]  # до нажатия бургер-меню
-    img_after = request.files["img_after"]  # после нажатия бургер-меню
+    # img_before = request.files["img_before"]  # до нажатия бургер-меню
+    # img_after = request.files["img_after"]  # после нажатия бургер-меню
 
-    img_b = Image.open(img_before.stream)
-    img_a = Image.open(img_after.stream)
+    img_before = request.form.get("img_before")  # до нажатия бургер-меню
+    img_after = request.form.get("img_after")
+
+    # img_b, img_a = None, None
+
+    img_b = base64.b64decode(img_before)
+    img_a = base64.b64decode(img_after)
+
+    # img_b = Image.open(img_before.stream)
+    # img_a = Image.open(img_after.stream)
+
+    img_b = Image.open(io.BytesIO(img_b))
+    img_a = Image.open(io.BytesIO(img_a))
 
     img_b = convert_from_image_to_cv2(img_b)
     img_a = convert_from_image_to_cv2(img_a)
@@ -188,7 +200,12 @@ def get_detection_menu():
 
     show_img(img_a)
 
+    # нужно сделать дополнительную люоаботку найденной максимальной области
+    # в частности брать не максимальную, а вторую, если она меньше не более чем на 10-15 процентов
+    # и у нее в отличие от максимальной высота больше ширины а у максимальной наоборот
+    
     # результаты нужно сортировать по оси y
+    result_text_regions.sort(key=lambda x: x[1])
     
     return make_response(jsonify(result_text_regions), 200)
 
