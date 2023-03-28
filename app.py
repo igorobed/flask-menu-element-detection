@@ -69,15 +69,9 @@ def get_detection_menu():
     img_a = convert_from_image_to_cv2(img_a)
 
     # чтобы вернуться к оригинальным координатам
-    cropped_x_y_in = {
-        "x": 0,
-        "y": 0
-    }
+    cropped_x_y_in = {"x": 0, "y": 0}
 
-    cropped_x_y_out = {
-        "x": 0,
-        "y": 0
-    }
+    cropped_x_y_out = {"x": 0, "y": 0}
 
     img_b_crop = crop_head(img_b, cropped_x_y=cropped_x_y_in)
     img_a_crop = crop_head(img_a, cropped_x_y=cropped_x_y_out)
@@ -88,36 +82,28 @@ def get_detection_menu():
     if menu_box is None:
         # print(f"Same image: {score}")
         return (
-            jsonify(
-                {
-                    "msg": "Same image"
-                }
-            ),
+            jsonify({"msg": "Same image"}),
             200,
         )
     elif menu_box == {}:
         # print("Menu field not detected")
         return (
-            jsonify(
-                {
-                    "msg": "Same image"
-                }
-            ),
+            jsonify({"msg": "Menu field not detected"}),
             200,
         )
-    
+
     # вырезаем область, притерпевшую изменения
     cropped_x_y_out["x"] += menu_box["x"]
     cropped_x_y_out["y"] += menu_box["y"]
     menu_box_img = custom_crop(img_a_crop, **menu_box)
-    
+
     predictions_crop = detector_ui.model(menu_box_img)
 
     # искать кластеры текстов мне в любом случае надо в обрезанном menu_box_img
     clustering = AgglomerativeClustering(
-	n_clusters=2,
-	affinity="manhattan",
-	linkage="complete",
+        n_clusters=2,
+        affinity="manhattan",
+        linkage="complete",
     )
 
     list_bboxes = []
@@ -144,7 +130,7 @@ def get_detection_menu():
     union_rectangles = []
     for key, items in unions.items():
         tl, br = items[0][:2], items[0][2:]
-    
+
         if len(items) == 1:
             union_rectangles.append([tl, br])
             continue
@@ -165,7 +151,7 @@ def get_detection_menu():
 
             if back_right_x_y[0] > max_x:
                 max_x = back_right_x_y[0]
-        
+
             if top_left_x_y[0] < min_x:
                 min_x = top_left_x_y[0]
 
@@ -176,7 +162,7 @@ def get_detection_menu():
     max_square = 0
     max_rectangle = None
     for item in union_rectangles:
-        curr_square = (item[1][0] - item[0][0]) * (item[1][1] - item[0][1]) 
+        curr_square = (item[1][0] - item[0][0]) * (item[1][1] - item[0][1])
         if curr_square > max_square:
             max_rectangle = item
             max_square = curr_square
@@ -194,21 +180,26 @@ def get_detection_menu():
                 temp[1] += cropped_x_y_out["y"]
                 temp[3] += cropped_x_y_out["y"]
 
-                cv2.rectangle(img_a, list(map(int, temp[:2])), list(map(int, temp[2:])), (0, 0, 255), 2)
+                # cv2.rectangle(
+                #     img_a,
+                #     list(map(int, temp[:2])),
+                #     list(map(int, temp[2:])),
+                #     (0, 0, 255),
+                #     2,
+                # )
 
                 result_text_regions.append(temp)
 
-    show_img(img_a)
+    # show_img(img_a)
 
     # нужно сделать дополнительную люоаботку найденной максимальной области
     # в частности брать не максимальную, а вторую, если она меньше не более чем на 10-15 процентов
     # и у нее в отличие от максимальной высота больше ширины а у максимальной наоборот
-    
+
     # результаты нужно сортировать по оси y
     result_text_regions.sort(key=lambda x: x[1])
-    
-    return make_response(jsonify(result_text_regions), 200)
 
+    return make_response(jsonify({"menu_elements": result_text_regions}), 200)
 
 
 @app.route("/", methods=["get", "post"])
